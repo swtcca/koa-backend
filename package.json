@@ -1,0 +1,32 @@
+{
+  "name": "ts-koa",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "export NODE_ENV='development' && nodemon --watch 'src/**/*' -e ts,tsx --exec ts-node ./src/main.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "joi": "^14.3.1",
+    "joi-to-swagger": "^3.1.0",
+    "koa": "^2.6.2",
+    "koa-joi-swagger-ts": "^1.0.14",
+    "koa-router": "^7.4.0",
+    "koa2-swagger-ui": "^2.11.3",
+    "lodash": "^4.17.11",
+    "reflect-metadata": "^0.1.13",
+    "typeorm": "^0.2.12"
+  },
+  "devDependencies": {
+    "@types/joi": "^14.0.1",
+    "@types/lodash": "^4.14.64",
+    "@types/koa": "^2.0.48",
+    "@types/koa-router": "^7.0.39",
+    "nodemon": "^1.18.9",
+    "ts-node": "^8.0.1",
+    "tslint": "^5.12.1",
+    "typescript": "^3.2.4"
+  }
+}
