@@ -8,6 +8,7 @@ import * as path from 'path';
 import * as _ from "lodash";
 import * as Router from "koa-router";
 import * as log4js from 'log4js';
+import { Context } from 'koa';
 
 const koaSwagger = require("koa2-swagger-ui");
 
@@ -133,7 +134,7 @@ export class KJSRouter {
           temp[k] = router;
           if (this.router[k]) {
             const accessUrl = (Controller[TAG_CONTROLLER] + path).replace(/{(\w+)}/g, ":$1");
-            this.router[k](accessUrl, ...(wares.concat(async (ctx, ...args) => {
+            this.router[k](accessUrl, ...(wares.concat(async (ctx: Context, ...args) => {
               try {
                 const result = await v.handle(ctx, ...args);
                 // 如果无返回值, 
@@ -147,6 +148,7 @@ export class KJSRouter {
               } catch (error) {
                 logger.error(accessUrl, ctx.$getParams());
                 logger.error(error.stack);
+                ctx.status = 500;
                 ctx.body = {
                   code: error.statusCode || error.status || 500,
                   message: isDebug ? error.message : '出错了'
