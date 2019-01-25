@@ -1,9 +1,13 @@
-import {TAG_CONTROLLER} from "./controller";
-import {TAG_METHOD} from "./method";
-import {TAG_MIDDLE_METHOD, TAG_GLOBAL_METHOD, TAG_MIDDLE_WARE} from "./utils";
-import {TAG_DEFINITION_NAME} from "./definition";
+import { log4jsConfig, isDebug } from './../utils/config';
+import { TAG_CONTROLLER } from "./controller";
+import { TAG_METHOD } from "./method";
+import { TAG_MIDDLE_METHOD, TAG_GLOBAL_METHOD, TAG_MIDDLE_WARE } from "./utils";
+import { TAG_DEFINITION_NAME } from "./definition";
+import * as fs from 'fs';
+import * as path from 'path';
 import * as _ from "lodash";
 import * as Router from "koa-router";
+import * as log4js from 'log4js';
 
 const koaSwagger = require("koa2-swagger-ui");
 
@@ -87,9 +91,13 @@ export const DEFAULT_PATH: IPath = {
   operationId: undefined,
   consumes: ["application/json"],
   produces: ["application/json"],
-  responses: {"200": {description: "Success"}},
+  responses: { "200": { description: "Success" } },
   security: []
 };
+
+log4js.configure(log4jsConfig);
+
+const logger = log4js.getLogger('cheese');
 
 export class KJSRouter {
 
@@ -124,16 +132,21 @@ export class KJSRouter {
           }
           temp[k] = router;
           if (this.router[k]) {
-            this.router[k]((Controller[TAG_CONTROLLER] + path).replace(/{(\w+)}/g, ":$1"), ...(wares.concat(async (ctx, ...args) => {
+            const accessUrl = (Controller[TAG_CONTROLLER] + path).replace(/{(\w+)}/g, ":$1");
+            this.router[k](accessUrl, ...(wares.concat(async (ctx, ...args) => {
               try {
                 const result = await v.handle(ctx, ...args);
-                return result;
-              } catch (error) {
-                const isDebug = process.env.NODE_ENV === 'development';
-                if(isDebug){
-                  console.log('Ooh, there was an err occured...', new Date);
-                  console.log(error);
+                // 如果无返回值, 
+                if(result !== undefined){
+                  ctx.body = result;
+                } 
+                // 并且返回body为空, 报错
+                if(ctx.body === undefined){
+                  ctx.throw(500, '无返回值');
                 }
+              } catch (error) {
+                logger.error(accessUrl, ctx.$getParams());
+                logger.error(error.stack);
                 ctx.body = {
                   code: error.statusCode || error.status || 500,
                   message: isDebug ? error.message : '出错了'
@@ -174,6 +187,79 @@ export class KJSRouter {
 
   getRouter() {
     return this.router;
+  }
+
+  /**
+   *根据目录递归查找目录下面的文件
+   * @param path string 
+   * @return fileList array[string]
+   */
+  getFiles = (path) => {
+    let fileList = [];
+    const findPathFunc = (basePath) => {
+      const files = fs.readdirSync(basePath);
+      files.forEach((file) => {
+        const filePath = `${basePath}/${file}`;
+        // js 文件
+        if (fs.statSync(filePath).isFile()) {
+          if (file.endsWith('.ts')) {
+            fileList.push(filePath);
+          }
+        } else {
+          findPathFunc(filePath);
+        }
+      })
+    };
+    findPathFunc(path);
+    return fileList;
+  }
+
+  /**
+   * 加载controller
+   * @param path [string] 路径
+   */
+  loadControllers = async path => {
+    for (const file of this.getFiles(path)) {
+      const controller = await import(file);
+      if(!controller || !controller.default){
+        return ;
+      }
+      this.loadController(controller.default);
+    }
+  }
+
+  /**
+   * 加载schema配置
+   * @param path [string] 路径
+   */
+  loadDefinitions = async path => {
+    for (const file of this.getFiles(path)) {
+      const definition = await import(file);
+      if(!definition || !definition.default){
+        return ;
+      }
+      this.loadDefinition(definition.default);
+    }
+  }
+
+  /**
+   *初始化app
+   */
+  initApp(app) {
+    // 获取swagger配置
+    this.setSwaggerFile('swagger.json');
+    // 拉起swagger的路径
+    this.loadSwaggerUI('/docs');
+
+    this.loadControllers(
+      path.resolve(__dirname, '../controllers')
+    );
+    this.loadDefinitions(
+      path.resolve(__dirname, '../definitions')
+    );
+
+    app.use(this.getRouter().routes());
+    app.use(this.getRouter().allowedMethods());
   }
 
 }

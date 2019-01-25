@@ -1,6 +1,7 @@
 import {ISchema, toJoi, toSwagger} from './ischema';
 import * as joi from 'joi';
 import {registerMethod, registerMiddleware} from './utils';
+import { Context } from 'koa';
 
 export const TAG_PARAMETER = Symbol('Parameter');
 
@@ -65,13 +66,12 @@ export function parameter(name: string, schema?: ISchema | joi.Schema, paramIn?:
                 params: ctx.params,
                 body: ctx.request.body,
                 query: ctx.request.query
-            }, tempSchema);
+            }, tempSchema, {allowUnknown: true});
             if (error) {
                 return ctx.throw(400, JSON.stringify({code: 400, message: error.message}));
             }
-            ctx.params = value.params;
-            ctx.request.body = value.body;
-            ctx.request.query = value.query;
+            // 合并参数
+            ctx.$getParams = () => Object.assign(value.params, value.body, value.query);
             return await next();
         });
 

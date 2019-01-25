@@ -1,6 +1,6 @@
-import {ISchema, toJoi, toSwagger} from './ischema';
+import { ISchema, toJoi, toSwagger } from './ischema';
 import * as joi from 'joi';
-import {registerMethod, registerMiddleware} from './utils';
+import { registerMethod, registerMiddleware } from './utils';
 
 export const TAG_RESPONSE = Symbol('Response');
 
@@ -29,17 +29,21 @@ export function response(code: number, schema?: ISchema | joi.Schema): MethodDec
                 description = schema['description'];
                 delete schema['description'];
             }
-            router.responses[code] = Object.assign({description: description}, {schema});
+            router.responses[code] = Object.assign({ description: description }, { schema });
         });
 
+        // 不需要返回响应的时候格式化数据
         registerMiddleware(target, key, async function fnResponse(ctx, next) {
             await next();
             // if has been handle the error;
-            const aleadyHandled = ctx.body.code === 500 && ctx.body.message;
-            if (RESPONSES.get(target.constructor).get(key).has(ctx.status) && !aleadyHandled) {
-                let {error, value} = joi.validate(ctx.body, RESPONSES.get(target.constructor).get(key).get(ctx.status));
+            if (RESPONSES.get(target.constructor).get(key).has(ctx.status)) {
+                let { error, value } = joi.validate(ctx.body, RESPONSES.get(target.constructor).get(key).get(ctx.status));
+                const aleadyHandled = ctx.body && ctx.body.code && ctx.body.code === 500 && ctx.body.message;
+                if (aleadyHandled) {
+                    return;
+                }
                 if (error) {
-                    ctx.body = {code: 500, message: error.message};
+                    ctx.body = { code: 500, message: error.message };
                     ctx.status = 500;
                     return;
                 }

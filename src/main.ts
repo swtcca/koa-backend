@@ -1,37 +1,25 @@
+import "reflect-metadata";
 import * as koa from 'koa';
-import * as joi from 'joi';
+import * as bodyParser from "koa-bodyparser";
+import { createConnection } from "typeorm";
 import { KJSRouter, } from './decorators';
 import { swaggerConfig } from './utils/config';
-import { UserSchema, AdminSchema } from "./definitions";
-import { UserController } from './controllers/ctrl.user';
-import { AdminController } from './controllers/ctrl.admin';
 
-import { toSchema, toSwagger, toJoi } from "./decorators/ischema";
+const main = async () => {
 
-const router = new KJSRouter(swaggerConfig);
+  await createConnection();
 
-router.loadDefinition(UserSchema);
-router.loadDefinition(AdminSchema);
-router.loadController(UserController);
-router.loadController(AdminController);
+  const app = new koa();
 
-// 获取swagger配置
-router.setSwaggerFile('swagger.json');
-// 拉起swagger的路径
-router.loadSwaggerUI('/docs');
+  app.use(bodyParser());
 
-const app = new koa();
+  const router = new KJSRouter(swaggerConfig);
 
-app.use(router.getRouter().routes());
+  router.initApp(app);
 
-app.use(router.getRouter().allowedMethods());
+  app.listen(3002, () => {
+    console.log(`app is listening on port: 3002`);
+  });
+}
 
-console.log(toSwagger(joi.object().keys({
-  test: joi.string().min(2).description('userId').required()
-})));
-
-console.log(toJoi(toSchema(UserSchema)));
-
-app.listen(3002, () => {
-  console.log(`app is listening on port: 3002`);
-});
+main();

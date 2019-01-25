@@ -10,3 +10,19 @@ export const swaggerConfig = {
   paths: {},
   definitions: {}
 }
+
+export const isDebug = process.env.NODE_ENV === 'development';
+
+export const log4jsConfig = {
+  appenders: {
+    cheese: isDebug ? {
+      type: 'console'
+    } : {
+        type: 'dateFile',
+        filename: 'logs/',
+        pattern: 'yyyy-MM-dd.log',
+        alwaysIncludePattern: true
+      }
+  },
+  categories: { default: { appenders: ['cheese'], level: isDebug ? 'info' : 'error' } }
+}
