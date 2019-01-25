@@ -6,6 +6,9 @@ import {Category} from '../entity/Category';
 @decorators.controller('/example')
 export default class ExampleController {
 
+  /**
+   * 模拟错误响应
+   */
   @decorators.post('/error')
   @decorators.parameter('bodyParams', joi.object().keys({
     a: joi.number().required(),
