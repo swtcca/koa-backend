@@ -1,7 +1,7 @@
 import * as joi from 'joi';
 import * as decorators from "../decorators";
-import UserSchema from "../definitions/define.user";
-import {Category} from '../entity/Category';
+import UserSchema from "../definitions/user";
+import { User } from '../entity/User';
 
 @decorators.controller('/example')
 export default class ExampleController {
@@ -35,13 +35,13 @@ export default class ExampleController {
   // @decorators.response(200, { type: 'array', items: { $ref: UserSchema } })
   @decorators.summary('返回列表')
   async getUsers() {
-    const cas = await Category.findAndCount();
+    const cas = await User.findAndCount();
     return {
       count: cas[1],
       rows: cas[0]
     };
   }
-  
+
 
   @decorators.post('/login')
   @decorators.parameter('list', joi.object().keys({

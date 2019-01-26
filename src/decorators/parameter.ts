@@ -1,7 +1,6 @@
 import {ISchema, toJoi, toSwagger} from './ischema';
 import * as joi from 'joi';
 import {registerMethod, registerMiddleware} from './utils';
-import { Context } from 'koa';
 
 export const TAG_PARAMETER = Symbol('Parameter');
 

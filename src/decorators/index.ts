@@ -146,7 +146,7 @@ export class KJSRouter {
                   ctx.throw(500, '无返回值');
                 }
               } catch (error) {
-                logger.error(accessUrl, ctx.$getParams());
+                // logger.error(accessUrl, ctx.$getParams());
                 logger.error(error.stack);
                 ctx.status = 500;
                 ctx.body = {

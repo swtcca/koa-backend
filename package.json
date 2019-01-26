@@ -12,6 +12,7 @@
     "joi": "^14.3.1",
     "joi-to-swagger": "^3.1.0",
     "koa": "^2.6.2",
+    "koa-body": "^4.0.6",
     "koa-bodyparser": "^4.2.1",
     "koa-joi-swagger-ts": "^1.0.14",
     "koa-router": "^7.4.0",
