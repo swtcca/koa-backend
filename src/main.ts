@@ -4,12 +4,12 @@ import * as koaBody from 'koa-body';
 import { KJSRouter, } from './decorators';
 import { createConnection } from "typeorm";
 import { logFunc } from "./utils/middlewares";
-import { swaggerConfig, bodyParserConfig, SqlEnvName } from './utils/config';
+import { swaggerConfig, bodyParserConfig } from './utils/config';
 
 const main = async () => {
 
   // typeorm连接初始化
-  await createConnection(SqlEnvName);
+  await createConnection();
 
   const app = new koa();
 

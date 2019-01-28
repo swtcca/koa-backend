@@ -17,9 +17,6 @@ export const swaggerConfig = {
 // 环境区分
 export const isDebug = process.env.NODE_ENV === 'development';
 
-// 数据库配置
-export const SqlEnvName = isDebug ? 'development' : 'production';
-
 // 日志
 export const log4jsConfig = {
   appenders: {

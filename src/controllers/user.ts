@@ -23,7 +23,7 @@ export default class TestController {
     const user = new User();
     user.name = name;
     user.password = password;
-    const file = await File.findOne({id: 1});
+    const file = await File.findOne({ id: 1 });
     user.userIcon = file;
     user.test = file;
     await ctx.manager.save(user);
@@ -37,9 +37,12 @@ export default class TestController {
   @decorators.tag('测试')
   @decorators.summary('测试查询')
   async testQuery(ctx: IContext) {
-    return await ctx.manager.findAndCount(User, {
+    // return await ctx.manager.findAndCount(User, {
+    //   relations: ['userIcon', 'test']
+    // });
+    return await User.findAndCount({
       relations: ['userIcon', 'test']
-    });
+    })
   }
 
   /**

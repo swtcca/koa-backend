@@ -1,5 +1,5 @@
 import { getConnection } from "typeorm";
-import { SqlEnvName, isDebug, log4jsConfig } from "./config";
+import { isDebug, log4jsConfig } from "./config";
 import * as log4js from 'log4js';
 import { IContext } from "../decorators/interface";
 
@@ -22,7 +22,7 @@ export const RequestInject = (url, handler) => {
     try {
       let result;
       // 创建连接并开始一个事务
-      await getConnection(SqlEnvName).transaction(async manager => {
+      await getConnection().transaction(async manager => {
         result = await handler(Object.assign(ctx, { manager }), ...args);
       });
       // 如果无返回值, 
