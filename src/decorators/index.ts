@@ -9,6 +9,7 @@ import * as _ from "lodash";
 import * as Router from "koa-router";
 import * as log4js from 'log4js';
 import { Context } from 'koa';
+import { getConnection } from "typeorm";
 
 const koaSwagger = require("koa2-swagger-ui");
 
@@ -136,17 +137,26 @@ export class KJSRouter {
             const accessUrl = (Controller[TAG_CONTROLLER] + path).replace(/{(\w+)}/g, ":$1");
             this.router[k](accessUrl, ...(wares.concat(async (ctx: Context, ...args) => {
               try {
-                const result = await v.handle(ctx, ...args);
+                let result;
+                // 创建连接并开始一个事务
+                await getConnection().transaction(async manager => {
+                  result = await v.handle(Object.assign(ctx, { manager }), ...args);
+                });
                 // 如果无返回值, 
-                if(result !== undefined){
+                if (result !== undefined) {
                   ctx.body = result;
-                } 
+                }
                 // 并且返回body为空, 报错
-                if(ctx.body === undefined){
+                if (ctx.body === undefined) {
                   ctx.throw(500, '无返回值');
                 }
               } catch (error) {
-                // logger.error(accessUrl, ctx.$getParams());
+                console.log(error);
+                logger.error(accessUrl, {
+                  params: ctx.params,
+                  body: ctx.request.body,
+                  query: ctx.request.query
+                });
                 logger.error(error.stack);
                 ctx.status = 500;
                 ctx.body = {
@@ -223,8 +233,8 @@ export class KJSRouter {
   loadControllers = async path => {
     for (const file of this.getFiles(path)) {
       const controller = await import(file);
-      if(!controller || !controller.default){
-        return ;
+      if (!controller || !controller.default) {
+        return;
       }
       this.loadController(controller.default);
     }
@@ -237,8 +247,8 @@ export class KJSRouter {
   loadDefinitions = async path => {
     for (const file of this.getFiles(path)) {
       const definition = await import(file);
-      if(!definition || !definition.default){
-        return ;
+      if (!definition || !definition.default) {
+        return;
       }
       this.loadDefinition(definition.default);
     }

@@ -5,6 +5,7 @@ import * as koaBody from 'koa-body';
 import { createConnection } from "typeorm";
 import { KJSRouter, } from './decorators';
 import { swaggerConfig } from './utils/config';
+import { runInNewContext } from "vm";
 
 const main = async () => {
 
@@ -12,17 +13,22 @@ const main = async () => {
 
   const app = new koa();
 
+  app.use(async (ctx, next) => {
+    console.log(ctx.request.url);
+    await next();
+  })
+
   app.use(koaBody({
     multipart: true, // 支持文件上传
-    encoding: 'gzip',
+    // encoding: 'gzip',
     formidable: {
       uploadDir: path.join(__dirname, 'upload/'), // 设置文件上传目录
       keepExtensions: true,    // 保持文件的后缀
       maxFieldsSize: 2 * 1024 * 1024, // 文件上传大小
-      onFileBegin: (name, file) => { // 文件上传前的设置
-        console.log(`name: ${name}`);
-        console.log(file);
-      },
+      // onFileBegin: (name, file) => { // 文件上传前的设置
+      //   console.log(`name: ${name}`);
+      //   console.log(file);
+      // },
     }
   }));
 
