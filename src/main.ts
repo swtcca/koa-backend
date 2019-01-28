@@ -1,37 +1,30 @@
 import "reflect-metadata";
 import * as koa from 'koa';
-import * as path from 'path';
 import * as koaBody from 'koa-body';
-import { createConnection } from "typeorm";
 import { KJSRouter, } from './decorators';
-import { swaggerConfig } from './utils/config';
-import { runInNewContext } from "vm";
+import { createConnection } from "typeorm";
+import { logFunc } from "./utils/middlewares";
+import { swaggerConfig, bodyParserConfig } from './utils/config';
 
 const main = async () => {
 
+  // typeorm连接初始化
   await createConnection();
 
   const app = new koa();
 
-  app.use(async (ctx, next) => {
-    console.log(ctx.request.url);
-    await next();
-  })
+  // bodyparser
+  // 解析post参数
+  // 处理文件上传
+  app.use(koaBody(bodyParserConfig));
 
-  app.use(koaBody({
-    multipart: true, // 支持文件上传
-    // encoding: 'gzip',
-    formidable: {
-      uploadDir: path.join(__dirname, 'upload/'), // 设置文件上传目录
-      keepExtensions: true,    // 保持文件的后缀
-      maxFieldsSize: 2 * 1024 * 1024, // 文件上传大小
-      // onFileBegin: (name, file) => { // 文件上传前的设置
-      //   console.log(`name: ${name}`);
-      //   console.log(file);
-      // },
-    }
-  }));
+  // 每次请求打印请求记录
+  // 为ctx添加$getParams方法
+  app.use(logFunc);
 
+  // 路由处理
+  // 自动扫描路由
+  // 扫描deinition
   const router = new KJSRouter(swaggerConfig);
 
   router.initApp(app);

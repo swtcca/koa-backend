@@ -384,8 +384,3 @@ function meta (schema, key) {
 function refDef (type, name) {
 	return { $ref: '#/components/' + type + '/' + name };
 }
-
-// var inspectU = require('util').inspect;
-// function inspect (value) {
-// 		console.error(inspectU(value, { colors: true, depth: 10 }));
-// }

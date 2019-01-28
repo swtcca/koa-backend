@@ -10,6 +10,7 @@ import * as Router from "koa-router";
 import * as log4js from 'log4js';
 import { Context } from 'koa';
 import { getConnection } from "typeorm";
+import { EntityManager } from "typeorm";
 
 const koaSwagger = require("koa2-swagger-ui");
 
@@ -97,6 +98,17 @@ export const DEFAULT_PATH: IPath = {
   security: []
 };
 
+interface IGetParams {
+  (): any;
+}
+
+interface ICustomContextProps {
+  $getParams: IGetParams,
+  manager: EntityManager
+}
+
+export type IContext = ICustomContextProps & IGetParams & Context
+
 log4js.configure(log4jsConfig);
 
 const logger = log4js.getLogger('cheese');
@@ -135,7 +147,7 @@ export class KJSRouter {
           temp[k] = router;
           if (this.router[k]) {
             const accessUrl = (Controller[TAG_CONTROLLER] + path).replace(/{(\w+)}/g, ":$1");
-            this.router[k](accessUrl, ...(wares.concat(async (ctx: Context, ...args) => {
+            this.router[k](accessUrl, ...(wares.concat(async (ctx: IContext, ...args) => {
               try {
                 let result;
                 // 创建连接并开始一个事务
@@ -152,11 +164,7 @@ export class KJSRouter {
                 }
               } catch (error) {
                 console.log(error);
-                logger.error(accessUrl, {
-                  params: ctx.params,
-                  body: ctx.request.body,
-                  query: ctx.request.query
-                });
+                logger.error(accessUrl, ctx.$getParams());
                 logger.error(error.stack);
                 ctx.status = 500;
                 ctx.body = {

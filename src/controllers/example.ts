@@ -20,9 +20,9 @@ export default class ExampleController {
     throw new Error('闹着玩');
   }
 
-  @decorators.get('/{userId}')
+  @decorators.get('/detail/{userId}')
   @decorators.parameter('userId', joi.string().description('userId').required(), decorators.ENUM_PARAM_IN.path)
-  @decorators.parameter('bina', joi.string().description('bina').required(), decorators.ENUM_PARAM_IN.query)
+  // @decorators.parameter('bina', joi.string().description('bina').required(), decorators.ENUM_PARAM_IN.query)
   // @decorators.response(200, { $ref: UserSchema })
   @decorators.tag('例子')
   @decorators.summary('参数实例')

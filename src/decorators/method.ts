@@ -1,8 +1,8 @@
 export const TAG_METHOD = Symbol('Method');
 
 export interface IMethod {
-    key: string;
-    handle: Function;
+  key: string;
+  handle: Function;
 }
 
 /**
@@ -32,16 +32,16 @@ const METHODS: Map<Function, Map<string, Map<string, IMethod>>> = new Map();
  * @returns {(target:Object, key:string)=>undefined}
  */
 export function method(method?: string, path?: string): MethodDecorator {
-    return function (target: Object, key: string) {
-        if (!METHODS.has(target.constructor)) {
-            METHODS.set(target.constructor, new Map());
-        }
-        if (!METHODS.get(target.constructor).has(path)) {
-            METHODS.get(target.constructor).set(path, new Map());
-        }
-        METHODS.get(target.constructor).get(path).set(method, {key, handle: target[key]});
-        target[TAG_METHOD] = target.constructor[TAG_METHOD] = METHODS.get(target.constructor);
+  return function (target: Object, key: string) {
+    if (!METHODS.has(target.constructor)) {
+      METHODS.set(target.constructor, new Map());
     }
+    if (!METHODS.get(target.constructor).has(path)) {
+      METHODS.get(target.constructor).set(path, new Map());
+    }
+    METHODS.get(target.constructor).get(path).set(method, { key, handle: target[key] });
+    target[TAG_METHOD] = target.constructor[TAG_METHOD] = METHODS.get(target.constructor);
+  }
 }
 
 

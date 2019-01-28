@@ -1,3 +1,5 @@
+import * as path from 'path';
+
 export const swaggerConfig = {
   swagger: "2.0",
   info: {
@@ -25,4 +27,14 @@ export const log4jsConfig = {
       }
   },
   categories: { default: { appenders: ['cheese'], level: isDebug ? 'info' : 'error' } }
+}
+
+export const bodyParserConfig = {
+  multipart: true, // 支持文件上传
+  // encoding: 'gzip', // 启用这个会报错
+  formidable: {
+    uploadDir: path.join(__dirname, '../upload/'), // 设置文件上传目录
+    keepExtensions: true,    // 保持文件的后缀
+    maxFieldsSize: 2 * 1024 * 1024, // 文件上传大小
+  }
 }
