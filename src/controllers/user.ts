@@ -1,10 +1,9 @@
-import { IContext } from './../decorators/index';
-import { ENUM_PARAM_IN } from './../decorators/parameter';
 import { File } from '../entity/File';
 import { User } from '../entity/User';
 import * as joi from 'joi';
 import { get } from 'lodash';
 import * as decorators from "../decorators";
+import { IContext } from '../decorators/interface';
 
 @decorators.controller('/test')
 export default class TestController {

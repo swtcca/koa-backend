@@ -1,16 +1,13 @@
-import { log4jsConfig, isDebug, SqlEnvName } from './../utils/config';
-import { TAG_CONTROLLER } from "./controller";
-import { TAG_METHOD } from "./method";
-import { TAG_MIDDLE_METHOD, TAG_GLOBAL_METHOD, TAG_MIDDLE_WARE } from "./utils";
-import { TAG_DEFINITION_NAME } from "./definition";
 import * as fs from 'fs';
-import * as path from 'path';
 import * as _ from "lodash";
+import * as path from 'path';
 import * as Router from "koa-router";
-import * as log4js from 'log4js';
-import { Context } from 'koa';
-import { getConnection } from "typeorm";
-import { EntityManager } from "typeorm";
+import { TAG_METHOD } from "./method";
+import { ISwagger, IPath } from './interface';
+import { TAG_CONTROLLER } from "./controller";
+import { TAG_DEFINITION_NAME } from "./definition";
+import { RequestInject } from '../utils/middlewares';
+import { TAG_MIDDLE_METHOD, TAG_GLOBAL_METHOD, TAG_MIDDLE_WARE } from "./utils";
 
 const koaSwagger = require("koa2-swagger-ui");
 
@@ -32,47 +29,6 @@ export * from "./summary";
 
 export * from "./tag";
 
-export interface ISwagger {
-  swagger: string;
-  info: {
-    description?: string;
-    version: string;
-    title: string;
-    termsOfService?: string;
-    concat?: {
-      email: string;
-    };
-    license?: {
-      name: string;
-      url: string;
-    }
-  };
-  host?: string;
-  basePath?: string;
-  tags?: {
-    name: string;
-    description?: string;
-    externalDocs?: {
-      description: string;
-      url: string;
-    }
-  }[];
-  schemes: string[];
-  paths: {};
-  definitions: {};
-}
-
-export interface IPath {
-  tags: string[];
-  summary: string;
-  description: string;
-  operationId: string;
-  consumes: string[];
-  produces: string[];
-  parameters?: any[];
-  responses: any;
-  security: any[];
-}
 
 export const DEFAULT_SWAGGER: ISwagger = {
   swagger: "2.0",
@@ -97,21 +53,6 @@ export const DEFAULT_PATH: IPath = {
   responses: { "200": { description: "Success" } },
   security: []
 };
-
-interface IGetParams {
-  (): any;
-}
-
-interface ICustomContextProps {
-  $getParams: IGetParams,
-  manager: EntityManager
-}
-
-export type IContext = ICustomContextProps & IGetParams & Context
-
-log4js.configure(log4jsConfig);
-
-const logger = log4js.getLogger('cheese');
 
 export class KJSRouter {
 
@@ -147,32 +88,7 @@ export class KJSRouter {
           temp[k] = router;
           if (this.router[k]) {
             const accessUrl = (Controller[TAG_CONTROLLER] + path).replace(/{(\w+)}/g, ":$1");
-            this.router[k](accessUrl, ...(wares.concat(async (ctx: IContext, ...args) => {
-              try {
-                let result;
-                // 创建连接并开始一个事务
-                await getConnection(SqlEnvName).transaction(async manager => {
-                  result = await v.handle(Object.assign(ctx, { manager }), ...args);
-                });
-                // 如果无返回值, 
-                if (result !== undefined) {
-                  ctx.body = result;
-                }
-                // 并且返回body为空, 报错
-                if (ctx.body === undefined) {
-                  ctx.throw(500, '无返回值');
-                }
-              } catch (error) {
-                console.log(error);
-                logger.error(accessUrl, ctx.$getParams());
-                logger.error(error.stack);
-                ctx.status = 500;
-                ctx.body = {
-                  code: error.statusCode || error.status || 500,
-                  message: isDebug ? error.message : '出错了'
-                }
-              }
-            })));
+            this.router[k](accessUrl, ...(wares.concat(RequestInject(accessUrl, v.handle))));
           }
         }
         this.swagger.paths[fullPath] = temp;
