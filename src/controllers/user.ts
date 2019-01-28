@@ -24,6 +24,9 @@ export default class TestController {
     const user = new User();
     user.name = name;
     user.password = password;
+    const file = await File.findOne({id: 1});
+    user.userIcon = file;
+    user.test = file;
     await ctx.manager.save(user);
     return user;
   }
@@ -34,8 +37,10 @@ export default class TestController {
   @decorators.get('/query')
   @decorators.tag('测试')
   @decorators.summary('测试查询')
-  async testQuery(ctx) {
-    return await ctx.manager.count(User);
+  async testQuery(ctx: IContext) {
+    return await ctx.manager.findAndCount(User, {
+      relations: ['userIcon', 'test']
+    });
   }
 
   /**
@@ -47,12 +52,12 @@ export default class TestController {
   @decorators.parameter('file', joi.any().meta({ swaggerType: 'file' }).description('json file'))
   async fileUpload(ctx) {
     const file = get(ctx, 'request.files.file');
-    if(file && file.name){
-      const fileObject = new File();
-      fileObject.name = file.name;
-      await ctx.manager.save(fileObject);
-    }
-    return file;
+    if (!file) throw new Error('文件为空');
+    const fileObject = new File();
+    fileObject.name = file.name;
+    fileObject.url = '1234455667';
+    await ctx.manager.save(fileObject);
+    return fileObject;
   }
 
 }

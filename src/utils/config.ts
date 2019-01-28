@@ -1,20 +1,26 @@
 import * as path from 'path';
 
+// swagger配置
 export const swaggerConfig = {
   swagger: "2.0",
   info: {
     version: "1.0.0",
     title: "接口文档系统"
   },
-  host: "localhost:3002",
+  // host: "localhost:3002",
   basePath: "",
   schemes: ["http"],
   paths: {},
   definitions: {}
 }
 
+// 环境区分
 export const isDebug = process.env.NODE_ENV === 'development';
 
+// 数据库配置
+export const SqlEnvName = isDebug ? 'development' : 'production';
+
+// 日志
 export const log4jsConfig = {
   appenders: {
     cheese: isDebug ? {
@@ -29,6 +35,7 @@ export const log4jsConfig = {
   categories: { default: { appenders: ['cheese'], level: isDebug ? 'info' : 'error' } }
 }
 
+// bodyParser相关
 export const bodyParserConfig = {
   multipart: true, // 支持文件上传
   // encoding: 'gzip', // 启用这个会报错

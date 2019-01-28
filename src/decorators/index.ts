@@ -1,4 +1,4 @@
-import { log4jsConfig, isDebug } from './../utils/config';
+import { log4jsConfig, isDebug, SqlEnvName } from './../utils/config';
 import { TAG_CONTROLLER } from "./controller";
 import { TAG_METHOD } from "./method";
 import { TAG_MIDDLE_METHOD, TAG_GLOBAL_METHOD, TAG_MIDDLE_WARE } from "./utils";
@@ -151,7 +151,7 @@ export class KJSRouter {
               try {
                 let result;
                 // 创建连接并开始一个事务
-                await getConnection().transaction(async manager => {
+                await getConnection(SqlEnvName).transaction(async manager => {
                   result = await v.handle(Object.assign(ctx, { manager }), ...args);
                 });
                 // 如果无返回值, 
@@ -200,7 +200,7 @@ export class KJSRouter {
     this.router.get(url, koaSwagger({
       routePrefix: false,
       swaggerOptions: {
-        url: this.swagger.schemes[0] + "://" + this.swagger.host + this.swaggerFileName,
+        url: this.swaggerFileName,
       }
     }));
   }

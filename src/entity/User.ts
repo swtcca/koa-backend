@@ -1,6 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, BaseEntity, OneToOne, JoinColumn } from "typeorm";
 import { File } from "./File";
 import { Base } from "./BaseEntity";
+import { Entity, Column, OneToOne, JoinColumn } from "typeorm";
 
 @Entity()
 export class User extends Base {
@@ -14,5 +14,9 @@ export class User extends Base {
   @OneToOne(type => File)
   @JoinColumn()
   userIcon: File;
+
+  @OneToOne(type => File)
+  @JoinColumn()
+  test: File;
 
 }
