@@ -11,13 +11,13 @@ export default class TestController {
   /**
    * 测试新增
    */
-  @decorators.post('/add')
+  @decorators.post('/login')
   @decorators.parameter('category', joi.object().keys({
     name: joi.string().required(),
     password: joi.string().required(),
   }), decorators.ENUM_PARAM_IN.body)
-  @decorators.tag('测试')
-  @decorators.summary('测试新增')
+  @decorators.tag('用户管理')
+  @decorators.summary('用户登录')
   async testAdd(ctx: IContext) {
     const { name, password }: User = ctx.$getParams();
     const user = new User();
@@ -36,10 +36,12 @@ export default class TestController {
   @decorators.get('/query')
   @decorators.tag('测试')
   @decorators.summary('测试查询')
+  @decorators.login_required()
   async testQuery(ctx: IContext) {
     // return await ctx.manager.findAndCount(User, {
     //   relations: ['userIcon', 'test']
     // });
+    ctx.cookies.set('token', '1234');
     return await User.findAndCount({
       relations: ['userIcon', 'test']
     })

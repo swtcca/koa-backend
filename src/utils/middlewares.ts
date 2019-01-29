@@ -45,3 +45,7 @@ export const RequestInject = (url, handler) => {
     }
   }
 }
+
+// export const AuthFunc = (ctx, next) => {
+//   const url = 
+// }

@@ -2,7 +2,7 @@ import { TAG_DEFINITION_NAME, TAG_DEFINITION_DESCRIPTION } from './definition';
 
 import * as joi from 'joi';
 
-import * as j2s from 'joi-to-swagger';
+import parse from '../utils/JoiToSwagger';
 
 export interface ISchema {
   type?: string;
@@ -12,7 +12,7 @@ export interface ISchema {
 
 export function toSwagger(iSchema: ISchema | joi.Schema): any {
   if (iSchema['isJoi']) {
-    return j2s(iSchema).swagger;
+    return parse(iSchema).swagger;
   }
   let items = undefined;
   let $ref: any = iSchema['$ref'];
@@ -31,7 +31,7 @@ export function toSwagger(iSchema: ISchema | joi.Schema): any {
 export function toSchema(Definition) {
   let key = {};
   key = Object.assign(key, new Definition());
-  return j2s(joi.object().keys(key)).swagger;
+  return parse(joi.object().keys(key)).swagger;
 }
 
 export function toJoi(iSchema: ISchema | joi.Schema): joi.Schema | ISchema {

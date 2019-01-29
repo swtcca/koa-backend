@@ -62,7 +62,7 @@ export function parameter(name: string, schema?: ISchema | joi.Schema, paramIn?:
             tempSchema.body = schema.schema;
         }
       }
-      let { error, value } = joi.validate({
+      let { error } = joi.validate({
         params: ctx.params,
         body: ctx.request.body,
         query: ctx.request.query

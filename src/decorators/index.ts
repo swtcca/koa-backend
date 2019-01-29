@@ -29,6 +29,8 @@ export * from "./summary";
 
 export * from "./tag";
 
+export * from "./login_required";
+
 
 export const DEFAULT_SWAGGER: ISwagger = {
   swagger: "2.0",

@@ -53,6 +53,12 @@ interface ISwagger {
   description?: string
 }
 
+interface ISchema {
+  type?: string;
+  items?: ISchema;
+  $ref?: Function;
+}
+
 export default function parse (schema, existingComponents = null) {
 	// inspect(schema);
 
@@ -79,7 +85,7 @@ export default function parse (schema, existingComponents = null) {
 	}
 
 	if (get(schema, '_flags.presence') === 'forbidden') {
-		return false;
+		return {};
 	}
 
 	var swagger;
