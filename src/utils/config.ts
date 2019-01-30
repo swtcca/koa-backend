@@ -1,5 +1,7 @@
 import * as path from 'path';
 
+export const AppKey = 'long long key';
+
 // swagger配置
 export const swaggerConfig = {
   swagger: "2.0",

@@ -70,8 +70,6 @@ export function parameter(name: string, schema?: ISchema | joi.Schema, paramIn?:
       if (error) {
         return ctx.throw(400, JSON.stringify({ code: 400, message: error.message }));
       }
-      // 合并参数, 已经由中间件实现
-      // ctx.$getParams = () => Object.assign(value.params, value.body, value.query);
       return await next();
     });
 

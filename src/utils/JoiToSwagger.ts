@@ -285,7 +285,7 @@ var parseAsType = {
 			itemsSchema = firstItem.schema;
 		}
 
-		var items = exports(itemsSchema, merge({}, existingComponents || {}, newComponentsByRef || {}));
+		var items = parse(itemsSchema, merge({}, existingComponents || {}, newComponentsByRef || {}));
 		if (get(itemsSchema, '_flags.presence') === 'required') {
 			items.swagger.__required = true;
 		}
@@ -300,7 +300,7 @@ var parseAsType = {
 
 		if (!itemsSchema) throw Error('Array schema does not define an items schema at index ' + index);
 
-		var items = exports(itemsSchema, merge({}, existingComponents || {}, newComponentsByRef || {}));
+		var items = parse(itemsSchema, merge({}, existingComponents || {}, newComponentsByRef || {}));
 
 		merge(newComponentsByRef, items.components || {});
 
@@ -339,7 +339,7 @@ var parseAsType = {
 		var children = get(schema, '_inner.children') || [];
 		children.forEach((child) => {
 			var key = child.key;
-			var prop = exports(child.schema, combinedComponents);
+			var prop = parse(child.schema, combinedComponents);
 			if (!prop.swagger) { // swagger is falsy if joi.forbidden()
 				return;
 			}

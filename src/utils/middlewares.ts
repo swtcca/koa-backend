@@ -1,7 +1,8 @@
-import { getConnection } from "typeorm";
-import { isDebug, log4jsConfig } from "./config";
 import * as log4js from 'log4js';
-import { IContext } from "../decorators/interface";
+import * as jwt from 'jsonwebtoken';
+import { getConnection } from "typeorm";
+import { IContext } from './../decorators/interface';
+import { isDebug, log4jsConfig, AppKey } from "./config";
 
 log4js.configure(log4jsConfig);
 
@@ -46,6 +47,20 @@ export const RequestInject = (url, handler) => {
   }
 }
 
-// export const AuthFunc = (ctx, next) => {
-//   const url = 
-// }
+// 验证token函数
+export const AuthFunc = async (ctx: IContext, next) => {
+  const token = (ctx.headers['Authorization'] || '').replace('Bearer ', '');
+  try {
+    // 1. token in headers
+    // 2. token in cookies(for swagger)
+    jwt.verify(token || ctx.cookies.get('token'), AppKey);
+    await next();
+  } catch (error) {
+    console.log(error);
+    ctx.status = 403;
+    ctx.body = {
+      code: 403,
+      message: isDebug ? error.message : 'token验证失败'
+    }
+  }
+}
