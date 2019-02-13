@@ -10,7 +10,6 @@ const logger = log4js.getLogger('cheese');
 
 // 日志相关
 export const logFunc = async (ctx, next) => {
-  console.log(ctx.request.url);
   ctx.$getParams = () => {
     return Object.assign(ctx.params, ctx.request.body, ctx.request.query);
   }
@@ -35,7 +34,6 @@ export const RequestInject = (url, handler) => {
         ctx.throw(500, '无返回值');
       }
     } catch (error) {
-      console.log(error);
       logger.error(url, ctx.$getParams());
       logger.error(error.stack);
       ctx.status = 500;
@@ -56,7 +54,6 @@ export const AuthFunc = async (ctx: IContext, next) => {
     jwt.verify(token || ctx.cookies.get('token'), AppKey);
     await next();
   } catch (error) {
-    console.log(error);
     ctx.status = 403;
     ctx.body = {
       code: 403,

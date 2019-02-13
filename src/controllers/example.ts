@@ -1,11 +1,11 @@
-import { 
-  get, 
-  tag, 
-  post, 
-  summary, 
-  parameter, 
-  controller, 
-  ENUM_PARAM_IN 
+import {
+  get,
+  tag,
+  post,
+  summary,
+  parameter,
+  controller,
+  ENUM_PARAM_IN
 } from "../decorators";
 import * as joi from 'joi';
 import { User } from '../entity/User';
@@ -47,7 +47,7 @@ export default class ExampleController {
     //   count: cas[1],
     //   rows: cas[0]
     // };
-    const users = await ctx.manager.find(User);
+    const users = await ctx.manager.find(User, { select: ['name', 'id', 'createdAt'] });
     return users;
   }
 

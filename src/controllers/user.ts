@@ -1,13 +1,14 @@
-import { 
-  tag, 
-  post, 
-  summary, 
-  parameter, 
-  controller, 
-  ENUM_PARAM_IN, 
-  login_required, 
+import {
+  tag,
+  post,
+  summary,
+  parameter,
+  controller,
+  ENUM_PARAM_IN,
+  login_required,
 } from "../decorators";
 import * as joi from 'joi';
+import * as omit from 'omit.js';
 import * as jwt from "jsonwebtoken";
 import { User } from '../entity/User';
 import { IContext } from '../decorators/interface';
@@ -38,7 +39,7 @@ export default class TestController {
     ctx.cookies.set('token', token);
     return {
       token,
-      user
+      user: omit(user, ['password'])
     };
   }
 
@@ -61,7 +62,7 @@ export default class TestController {
     }
     const user = new User(userInfo);
     await ctx.manager.save(user);
-    return user;
+    return omit(user, ['password']);
   }
 
 }
