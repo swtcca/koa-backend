@@ -44,7 +44,7 @@ export function parameter(name: string, schema?: ISchema | joi.Schema, paramIn?:
         name,
         in: ENUM_PARAM_IN[paramIn],
         description: description
-      }, { required: paramIn == ENUM_PARAM_IN.path && true }, ENUM_PARAM_IN.body === paramIn ? { schema } : schema));
+      }, { required: paramIn == ENUM_PARAM_IN.path }, ENUM_PARAM_IN.body === paramIn ? { schema } : schema));
     });
 
     registerMiddleware(target, key, async function fnParameter(ctx: IContext, next) {
@@ -62,13 +62,20 @@ export function parameter(name: string, schema?: ISchema | joi.Schema, paramIn?:
             tempSchema.body = schema.schema;
         }
       }
-      let { error } = joi.validate({
+      const { error, value } = joi.validate({
         params: ctx.params,
         body: ctx.request.body,
         query: ctx.request.query
-      }, tempSchema, { allowUnknown: true });
+      }, tempSchema, { 
+        allowUnknown: true,
+        abortEarly: true,
+      });
       if (error) {
         return ctx.throw(400, JSON.stringify({ code: 400, message: error.message }));
+      }
+      // 参数验证完成, 再覆盖$getParams方法
+      ctx.$getParams = () => {
+        return Object.assign(value.params, value.body, value.query);
       }
       return await next();
     });

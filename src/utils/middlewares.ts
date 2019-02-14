@@ -11,6 +11,7 @@ const logger = log4js.getLogger('cheese');
 // 日志相关
 export const logFunc = async (ctx, next) => {
   ctx.$getParams = () => {
+    console.warn('warning: it is unsafe for this function, please add @parameter for the controller');
     return Object.assign(ctx.params, ctx.request.body, ctx.request.query);
   }
   await next();

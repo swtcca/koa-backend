@@ -1,5 +1,6 @@
 import {
   tag,
+  get,
   post,
   summary,
   parameter,
@@ -13,6 +14,7 @@ import * as jwt from "jsonwebtoken";
 import { User } from '../entity/User';
 import { IContext } from '../decorators/interface';
 import { AppKey } from '../utils/config';
+import { Like } from "typeorm";
 
 @controller('/user')
 export default class TestController {
@@ -63,6 +65,35 @@ export default class TestController {
     const user = new User(userInfo);
     await ctx.manager.save(user);
     return omit(user, ['password']);
+  }
+
+  @get('s')
+  @tag('用户管理')
+  @summary('分页查询用户')
+  @parameter('page', joi.number().description('分页页数, 从0开始, 默认0').default(0))
+  @parameter('size', joi.number().description('每页多少条').default(15))
+  @parameter('search', joi.string().description('搜索关键字').default(''))
+  @parameter('order_by', joi.string().description('排序字段').default('createdAt'))
+  @parameter('order_func', joi.string().valid(['ASC', 'DESC']).description('排序方法').default('ASC'))
+  async queryUsers(ctx: IContext) {
+    const { page, size, order_by, order_func, search } = ctx.$getParams();
+    const [users, count] = await User.findAndCount({
+      select: ['id', 'name', 'createdAt'],
+      skip: page * size,
+      take: size,
+      order: {
+        [order_by]: order_func
+      },
+      where: {
+        name: Like(`%${search}%`)
+      }
+    });
+    return {
+      count,
+      users,
+      page,
+      size
+    };
   }
 
 }
