@@ -1,4 +1,4 @@
-import { ISchema, toJoi, toSwagger } from './ischema';
+import { ISchema, toJoi, toSwagger, MixedSchema } from './ischema';
 import * as joi from 'joi';
 import { registerMethod, registerMiddleware } from './utils';
 
@@ -8,7 +8,7 @@ const RESPONSES: Map<Function, Map<string, Map<number, ISchema | joi.Schema>>> =
 
 export const DEFAULT_RESPONSE: joi.Schema = joi.string().default('');
 
-export function response(code: number, schema?: ISchema | joi.Schema): MethodDecorator {
+export function response(code: number, schema?: ISchema | joi.Schema | MixedSchema): MethodDecorator {
   return function (target: any, key: string) {
     if (!schema) {
       schema = DEFAULT_RESPONSE;
@@ -37,11 +37,11 @@ export function response(code: number, schema?: ISchema | joi.Schema): MethodDec
       await next();
       // if has been handle the error;
       if (RESPONSES.get(target.constructor).get(key).has(ctx.status)) {
-        let { error, value } = joi.validate(ctx.body, RESPONSES.get(target.constructor).get(key).get(ctx.status));
         const aleadyHandled = ctx.body && ctx.body.code && ctx.body.code === 500 && ctx.body.message;
         if (aleadyHandled) {
           return;
         }
+        let { error, value } = joi.validate(ctx.body, RESPONSES.get(target.constructor).get(key).get(ctx.status));
         if (error) {
           ctx.body = { code: 500, message: error.message };
           ctx.status = 500;

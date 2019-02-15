@@ -7,6 +7,7 @@ import {
   controller,
   ENUM_PARAM_IN,
   login_required,
+  response,
 } from "../decorators";
 import * as joi from 'joi';
 import * as omit from 'omit.js';
@@ -15,6 +16,7 @@ import { User } from '../entity/User';
 import { IContext } from '../decorators/interface';
 import { AppKey } from '../utils/config';
 import { Like } from "typeorm";
+import UserSchema from "../definitions/User";
 
 @controller('/user')
 export default class TestController {
@@ -56,6 +58,7 @@ export default class TestController {
   }), ENUM_PARAM_IN.body)
   @summary('添加管理员')
   @login_required()
+  @response(200, { $ref: UserSchema })
   async testQuery(ctx: IContext) {
     const userInfo: User = ctx.$getParams();
     const lastUser = await User.findOne({ name: userInfo.name });
@@ -70,14 +73,26 @@ export default class TestController {
   @get('s')
   @tag('用户管理')
   @summary('分页查询用户')
-  @parameter('page', joi.number().description('分页页数, 从0开始, 默认0').default(0))
-  @parameter('size', joi.number().description('每页多少条').default(15))
+  @parameter('page', joi.number().integer().min(0).description('分页页数, 从0开始, 默认0').default(0))
+  @parameter('size', joi.number().integer().min(0).max(100).description('每页多少条').default(15))
   @parameter('search', joi.string().description('搜索关键字').default(''))
   @parameter('order_by', joi.string().description('排序字段').default('createdAt'))
   @parameter('order_func', joi.string().valid(['ASC', 'DESC']).description('排序方法').default('ASC'))
+  @response(200, {
+    users: { type: 'array', $ref: UserSchema, desc: '用户列表' },
+    total: joi.number().integer().description('总条数'),
+    page: joi.number().integer().description('当前页码'),
+    size: joi.number().integer().description('每页条数')
+  })
   async queryUsers(ctx: IContext) {
-    const { page, size, order_by, order_func, search } = ctx.$getParams();
-    const [users, count] = await User.findAndCount({
+    const {
+      page,
+      size,
+      order_by,
+      order_func,
+      search
+    } = ctx.$getParams();
+    const users = await User.find({
       select: ['id', 'name', 'createdAt'],
       skip: page * size,
       take: size,
@@ -88,9 +103,11 @@ export default class TestController {
         name: Like(`%${search}%`)
       }
     });
+
+    const total = await User.count();
     return {
-      count,
       users,
+      total,
       page,
       size
     };

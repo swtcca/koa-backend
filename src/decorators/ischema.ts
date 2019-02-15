@@ -8,12 +8,31 @@ export interface ISchema {
   type?: string;
   items?: ISchema;
   $ref?: Function;
+  desc?: string;
 }
 
-export function toSwagger(iSchema: ISchema | joi.Schema): any {
+export interface MixedSchema {
+  [key: string]: joi.Schema | ISchema
+}
+
+export function toSwagger(iSchema: ISchema | joi.Schema | MixedSchema): any {
   if (iSchema['isJoi']) {
     return parse(iSchema).swagger;
   }
+  if(iSchema['$ref']){
+    return iSchemaToSwagger(iSchema);
+  }
+  let rules = {};
+  Object.assign(rules, iSchema);
+  for(let key in rules){
+    if(!rules[key]['isJoi']){
+      rules[key] = toJoi(rules[key]);
+    }
+  }
+  return parse(joi.object().keys(rules)).swagger;
+}
+
+export function iSchemaToSwagger(iSchema: ISchema | joi.Schema): any{
   let items = undefined;
   let $ref: any = iSchema['$ref'];
   let description = undefined;
@@ -29,33 +48,59 @@ export function toSwagger(iSchema: ISchema | joi.Schema): any {
 }
 
 export function toSchema(Definition) {
-  let key = {};
-  key = Object.assign(key, new Definition());
-  return parse(joi.object().keys(key)).swagger;
+  return parse(classToJoi(Definition)).swagger;
+}
+
+export function classToJoi(def) {
+  let rules = {};
+  rules = Object.assign(rules, new def());
+  for(let key in rules){
+    if(!rules[key]['isJoi']){
+      rules[key] = toJoi(rules[key]);
+    }
+  }
+  return joi.object().keys(rules);
+}
+
+export function iSchemaToJoi(iSchema: ISchema | joi.Schema) : joi.Schema{
+  let type = iSchema['type'] || 'object';
+  let schema = null;
+  let Ref: any = iSchema['$ref'] || (iSchema['items'] && iSchema['items'].$ref);
+  let rules = {};
+  if (Ref) {
+    let ref = new Ref();
+    rules = Object.assign({}, ref);
+  }
+  for(let key in rules){
+    if(!rules[key]['isJoi']){
+      rules[key] = toJoi(rules[key]);
+    }
+  }
+  if (joi[type]) {
+    schema = joi[type]();
+  }
+  if (Ref && Ref[TAG_DEFINITION_DESCRIPTION]) {
+    schema = schema.description(iSchema['desc'] || Ref[TAG_DEFINITION_DESCRIPTION]);
+  }
+  switch (type) {
+    case 'object':
+      return schema.keys(rules);
+    case 'array':
+      return schema.items(rules);
+  }
 }
 
 export function toJoi(iSchema: ISchema | joi.Schema): joi.Schema | ISchema {
   if (iSchema['isJoi']) {
     return iSchema;
   }
-  let type = iSchema['type'] || 'object';
-  let schema = null;
-  let Ref: any = iSchema['$ref'] || (iSchema['items'] && iSchema['items'].$ref);
-  let keys = {};
-  if (Ref) {
-    let ref = new Ref();
-    keys = Object.assign({}, ref);
+  if(iSchema['$ref']){
+    return iSchemaToJoi(iSchema);
   }
-  if (joi[type]) {
-    schema = joi[type]();
+  if(Object.prototype.toString.call(iSchema) === '[object Function]'){
+    return classToJoi(iSchema);
   }
-  if (Ref && Ref[TAG_DEFINITION_DESCRIPTION]) {
-    schema = schema.description(Ref[TAG_DEFINITION_DESCRIPTION]);
-  }
-  switch (type) {
-    case 'object':
-      return schema.keys(keys);
-    case 'array':
-      return schema.items(keys);
-  }
+  // if(Object.prototype.toString.call(iSchema) === '[object Object]'){
+  //   return classToJoi(iSchema);
+  // }
 }
