@@ -29,8 +29,4 @@ export class User extends Base {
   @JoinColumn()
   userIcon: File;
 
-  @OneToOne(type => File)
-  @JoinColumn()
-  test: File;
-
 }

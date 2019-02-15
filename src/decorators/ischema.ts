@@ -100,7 +100,4 @@ export function toJoi(iSchema: ISchema | joi.Schema): joi.Schema | ISchema {
   if(Object.prototype.toString.call(iSchema) === '[object Function]'){
     return classToJoi(iSchema);
   }
-  // if(Object.prototype.toString.call(iSchema) === '[object Object]'){
-  //   return classToJoi(iSchema);
-  // }
 }

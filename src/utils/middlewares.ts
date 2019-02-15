@@ -58,7 +58,8 @@ export const AuthFunc = async (ctx: IContext, next) => {
     ctx.status = 403;
     ctx.body = {
       code: 403,
-      message: isDebug ? error.message : 'token验证失败'
+      // message: isDebug ? error.message : '账户未登录或登录状态已失效'
+      message: '账户未登录或登录状态已失效'
     }
   }
 }
