@@ -14,7 +14,7 @@ import { Like } from "typeorm";
 import * as omit from 'omit.js';
 import * as jwt from "jsonwebtoken";
 import { User } from '../entity/User';
-import { AppKey } from '../utils/config';
+import { AppConfig } from '../utils/config';
 import UserSchema from "../definitions/User";
 import { IContext } from '../decorators/interface';
 
@@ -28,15 +28,15 @@ export default class TestController {
   @parameter(
     'body', 
     joi.object().keys({
-      name: joi.string().required(),
-      password: joi.string().required(),
+      name: joi.string().required().description('用户名'),
+      password: joi.string().required().description('密码'),
     }), ENUM_PARAM_IN.body
   )
   @tag('用户管理')
   @summary('用户登录')
   @response(200, {
     user: { $ref: UserSchema, desc: '用户信息' },
-    token: joi.string().description('需要每次在请求头或者cookie中带上'),
+    token: joi.string().description('token, 需要每次在请求头或者cookie中带上'),
   })
   async login(ctx: IContext) {
     const { name, password }: User = ctx.$getParams();
@@ -46,7 +46,7 @@ export default class TestController {
     }
     const token = jwt.sign({
       data: user.id
-    }, AppKey, { expiresIn: 60 * 60 });
+    }, AppConfig.appKey, { expiresIn: 60 * 60 });
     ctx.cookies.set('token', token);
     return {
       token,
@@ -62,8 +62,8 @@ export default class TestController {
   @parameter(
     'body', 
     joi.object().keys({
-      name: joi.string().required(),
-      password: joi.string().required(),
+      name: joi.string().required().description('用户名'),
+      password: joi.string().required().description('密码'),
     }), ENUM_PARAM_IN.body
   )
   @summary('添加管理员')

@@ -1,6 +1,9 @@
 import * as path from 'path';
 
-export const AppKey = 'long long key';
+export const AppConfig = {
+  appKey: 'long long key',
+  port: 3002
+}
 
 // swagger配置
 export const swaggerConfig = {
@@ -42,5 +45,8 @@ export const bodyParserConfig = {
     uploadDir: path.join(__dirname, '../upload/'), // 设置文件上传目录
     keepExtensions: true,    // 保持文件的后缀
     maxFieldsSize: 2 * 1024 * 1024, // 文件上传大小
+    // onFileBegin: (name, file) => {
+    //   file.savedName = file.path.split('/').pop();
+    // }
   }
 }

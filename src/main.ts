@@ -4,7 +4,7 @@ import * as koaBody from 'koa-body';
 import { KJSRouter, } from './decorators';
 import { createConnection } from "typeorm";
 import { logFunc } from "./utils/middlewares";
-import { swaggerConfig, bodyParserConfig } from './utils/config';
+import { swaggerConfig, bodyParserConfig, AppConfig } from './utils/config';
 
 const main = async () => {
 
@@ -29,8 +29,8 @@ const main = async () => {
 
   router.initApp(app);
 
-  app.listen(3002, () => {
-    console.log(`app is listening on port: 3002`);
+  app.listen(AppConfig.port, () => {
+    console.log(`app is listening on port: ${AppConfig.port}`);
   });
 }
 
