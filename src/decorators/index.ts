@@ -160,7 +160,7 @@ export class KJSRouter {
     for (const file of this.getFiles(path)) {
       const controller = await import(file);
       if (!controller || !controller.default) {
-        return;
+        continue;
       }
       this.loadController(controller.default);
     }
@@ -174,7 +174,7 @@ export class KJSRouter {
     for (const file of this.getFiles(path)) {
       const definition = await import(file);
       if (!definition || !definition.default) {
-        return;
+        continue;
       }
       this.loadDefinition(definition.default);
     }
